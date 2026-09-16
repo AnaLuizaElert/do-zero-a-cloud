@@ -1,0 +1,25 @@
+{
+	admin off
+	persist_config off
+	auto_https off
+}
+
+:{$PORT:3000} {
+	handle /health {
+		respond "OK" 200
+	}
+
+	handle /config.js {
+		header Content-Type "application/javascript; charset=utf-8"
+		header Cache-Control "no-store"
+		respond "window.__APP_CONFIG__ = { VITE_API_URL: \"{$VITE_API_URL:http://localhost:8090}\" };" 200
+	}
+
+	handle {
+		root * /srv
+		encode zstd gzip
+		header Cache-Control "no-cache, must-revalidate"
+		try_files {path} /index.html
+		file_server
+	}
+}
