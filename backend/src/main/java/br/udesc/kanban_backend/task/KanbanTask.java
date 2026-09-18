@@ -34,7 +34,7 @@ public class KanbanTask {
     private String name;
 
     @Getter
-    // TODO 3a: mapeie a posição na coluna física position, obrigatória e maior que zero.
+    // TODO 3a: mapeie a posição na coluna física position, obrigatória e positivo ou zero.
     private int position;
 
     @Getter
