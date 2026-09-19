@@ -8,6 +8,7 @@ import br.udesc.kanban_backend.task.dto.CreateTaskRequest;
 import br.udesc.kanban_backend.task.dto.TaskResponse;
 import br.udesc.kanban_backend.task.dto.UpdateTaskRequest;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.annotations.NotFound;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,26 +30,56 @@ public class TaskService {
 
     @Transactional(readOnly = true)
     public List<TaskResponse> listByColumn(UUID columnId) {
-        // TODO 3: confirme a coluna, consulte o repository e converta o resultado.
-        throw new UnsupportedOperationException("TODO 3: listar tarefas da coluna");
+        BoardColumn column = findColumn(columnId);
+        if(column != null){
+            List<KanbanTask> listKanban = taskRepository.findKanbanTaskByColumn_IdOrderByPositionAsc(columnId);
+            List<TaskResponse> listResponse = new ArrayList<>();
+            for (KanbanTask task : listKanban) {
+                listResponse.add(
+                        new TaskResponse(
+                                task.getId(), task.getName(), task.getPosition(), task.getCreatedAt(), task.getDueDate(),
+                                task.isCompleted(), task.getTags(), task.getColumn().getId()
+                        )
+                );
+            }
+            return listResponse;
+        }
+        return List.of();
     }
 
     @Transactional
     public TaskResponse create(UUID columnId, CreateTaskRequest request) {
-        // TODO 3: valide URL e body, datas e tags; construa e persista a tarefa.
-        throw new UnsupportedOperationException("TODO 3: criar tarefa");
+        BoardColumn column = findColumn(columnId);
+        KanbanTask task = taskRepository.save(new KanbanTask(
+                request.name(), request.position(), request.createdAt(), request.dueDate(),
+                request.completed(), request.tags(), column
+        ));
+        return new TaskResponse(
+                task.getId(), task.getName(), task.getPosition(), task.getCreatedAt(), task.getDueDate(),
+                task.isCompleted(), task.getTags(), task.getColumn().getId()
+        );
     }
 
     @Transactional
     public TaskResponse update(UUID taskId, UpdateTaskRequest request) {
-        // TODO 3: localize a tarefa, preserve createdAt, valide os dados e atualize.
-        throw new UnsupportedOperationException("TODO 3: atualizar tarefa");
+        KanbanTask task = findTask(taskId);
+        BoardColumn column = findColumn(request.columnId());
+        task.update(
+                request.name(), request.position(), request.dueDate(), request.completed(), request.tags(), column
+        );
+        return new TaskResponse(
+                task.getId(), request.name(), request.position(), request.createdAt(), request.dueDate(),
+                request.completed(), request.tags(), column.getId()
+        );
     }
 
     @Transactional
     public void delete(UUID taskId) {
-        // TODO extra: localize a tarefa antes de excluí-la.
-        throw new UnsupportedOperationException("TODO extra: excluir tarefa");
+        KanbanTask task = findTask(taskId);
+        if(task != null){
+            taskRepository.delete(task);
+        }
+        throw new RuntimeException();
     }
 
     private List<String> normalizeTags(List<String> tags) {

@@ -27,14 +27,12 @@ public class ColumnController {
 
     @GetMapping("/from/{boardId}")
     public List<ColumnResponse> listByBoard(@PathVariable UUID boardId) {
-        // TODO 2: receba o ID do quadro e delegue a listagem para o service.
-        throw new UnsupportedOperationException("TODO 2: listar colunas do quadro");
+        return columnService.listByBoard(boardId);
     }
 
     @PostMapping
     public ColumnResponse create(@Valid @RequestBody ColumnRequest request) {
-        // TODO 2: valide o body e delegue a criação para o service.
-        throw new UnsupportedOperationException("TODO 2: criar coluna");
+        return columnService.create(request);
     }
 
     @PutMapping("/{columnId}")

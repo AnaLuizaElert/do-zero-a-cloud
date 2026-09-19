@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,16 +22,27 @@ public class ColumnService {
 
     @Transactional(readOnly = true)
     public List<ColumnResponse> listByBoard(UUID boardId) {
-        // TODO 2: confirme que o quadro existe, consulte o repository em ordem
-        // de posição e converta as entidades para response.
-        throw new UnsupportedOperationException("TODO 2: listar colunas do quadro");
+        List<BoardColumn> listBoard = columnRepository.findByBoard_IdOrderByPositionAsc(boardId);
+        List<ColumnResponse> listColumn = new ArrayList<>();
+        for(BoardColumn board : listBoard){
+            listColumn.add(
+                    new ColumnResponse(
+                            board.getId(), board.getName(), board.getPosition(), board.getBoard().getId()
+                    )
+            );
+        }
+        return listColumn;
     }
 
     @Transactional
     public ColumnResponse create(ColumnRequest request) {
-        // TODO 2: localize o quadro, remova espaços do nome, construa a coluna
-        // e persista antes de responder.
-        throw new UnsupportedOperationException("TODO 2: criar coluna");
+        Board board = findBoard(request.boardId());
+        BoardColumn newColumn = columnRepository.save(
+            new BoardColumn(
+                    request.name().trim(), request.position(), board
+            )
+        );
+        return new ColumnResponse(newColumn.getId(), newColumn.getName(), newColumn.getPosition(), newColumn.getBoard().getId());
     }
 
     @Transactional
